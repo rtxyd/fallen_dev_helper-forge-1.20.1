@@ -19,6 +19,7 @@ import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.stream.Collectors;
+
 import cpw.mods.modlauncher.api.ITransformer.Target;
 import org.slf4j.LoggerFactory;
 
@@ -51,11 +52,16 @@ public class FallenTransformerService implements ITransformationService {
                     if (!Files.exists(fallenPath)) {
                         try {
                             Files.createDirectory(fallenPath);
+                        } catch (IOException e) {
+                            LOGGER.error("Failed to create fallen dir", e);
+                        }
+                    } else {
+                        try {
                             Files.writeString(fallenPath.resolve("fallen_ref_blacklist.txt"), "");
                             Files.writeString(fallenPath.resolve("fallen_ref_targets.txt"), "");
                             Files.writeString(fallenPath.resolve("fallen_ref_mains.txt"), "");
                         } catch (IOException e) {
-                            LOGGER.error("Failed to create fallen dir", e);
+                            LOGGER.error("Failed to create fallen ref files", e);
                         }
                     }
                 }, () -> LOGGER.error("Could not find game path"));
@@ -78,13 +84,17 @@ public class FallenTransformerService implements ITransformationService {
                 mainClasses.add(className);
             }
         }
+        Set<String> items = new HashSet<>();
         for (String className : mainClasses) {
-            classTargets.add(ITransformer.Target.targetClass(className));
             ClassInfo info = classHierarchy.get(className);
+            items.add(className);
             if (info != null) {
-                classTargets.addAll(info.innerClasses.stream().map(i -> Target.targetClass(i.name)).collect(Collectors.toSet()));
+                for (String member : info.nestMembers) {
+                    items.add(member);
+                }
             }
         }
+        classTargets.addAll(items.stream().map(Target::targetClass).collect(Collectors.toSet()));
         LOGGER.info("Found {} classes", classTargets.size());
     }
 
@@ -134,7 +144,7 @@ public class FallenTransformerService implements ITransformationService {
                 try (InputStream is = file.toURI().toURL().openStream()) {
                     ClassNode cn = new ClassNode();
                     new ClassReader(is).accept(cn, ClassReader.SKIP_CODE | ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
-                    out.put(className, new ClassInfo(cn.superName, cn.interfaces, cn.innerClasses));
+                    out.put(className, new ClassInfo(cn.superName, cn.interfaces, cn.nestMembers));
                     if (isSubclassOf(className, superClass)) {
                         outClasses.add(className);
                     }
@@ -155,9 +165,10 @@ public class FallenTransformerService implements ITransformationService {
                 try (InputStream is = jar.getInputStream(entry)) {
                     ClassNode cn = new ClassNode();
                     new ClassReader(is).accept(cn, ClassReader.SKIP_CODE | ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
-                    outCIMap.put(className, new ClassInfo(cn.superName, cn.interfaces, cn.innerClasses));
+                    outCIMap.put(className, new ClassInfo(cn.superName, cn.interfaces, cn.nestMembers));
                     if (!shouldAddJar && isSubclassOf(className, superClass)) {
                         outJars.add(jarFile);
+                        shouldAddJar = true;
                     }
                 } catch (IOException ignored) {}
             }
@@ -173,7 +184,7 @@ public class FallenTransformerService implements ITransformationService {
                 try (InputStream is = file.toURI().toURL().openStream()) {
                     ClassNode cn = new ClassNode();
                     new ClassReader(is).accept(cn, ClassReader.SKIP_CODE | ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
-                    out.put(className, new ClassInfo(cn.superName, cn.interfaces, cn.innerClasses));
+                    out.put(className, new ClassInfo(cn.superName, cn.interfaces, cn.nestMembers));
                 } catch (IOException ignored) {}
             }
         }
@@ -190,7 +201,7 @@ public class FallenTransformerService implements ITransformationService {
                 try (InputStream is = jar.getInputStream(entry)) {
                     ClassNode cn = new ClassNode();
                     new ClassReader(is).accept(cn, ClassReader.SKIP_CODE | ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
-                    out.put(className, new ClassInfo(cn.superName, cn.interfaces, cn.innerClasses));
+                    out.put(className, new ClassInfo(cn.superName, cn.interfaces, cn.nestMembers));
                 } catch (IOException ignored) {}
             }
         } catch (IOException ignored) {}
@@ -217,12 +228,12 @@ public class FallenTransformerService implements ITransformationService {
     private static class ClassInfo {
         final String superName;
         final List<String> interfaces;
-        final List<InnerClassNode> innerClasses;
+        final List<String> nestMembers;
 
-        ClassInfo(String superName, List<String> interfaces, List<InnerClassNode> innerClasses) {
+        ClassInfo(String superName, List<String> interfaces, List<String> nestMembers) {
             this.superName = superName;
             this.interfaces = interfaces != null ? interfaces : Collections.emptyList();
-            this.innerClasses = innerClasses != null ? innerClasses : Collections.emptyList();
+            this.nestMembers = nestMembers != null ? nestMembers : Collections.emptyList();
         }
     }
 

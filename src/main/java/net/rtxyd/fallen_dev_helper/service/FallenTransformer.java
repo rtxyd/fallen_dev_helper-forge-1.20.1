@@ -39,7 +39,7 @@ public class FallenTransformer implements ITransformer<ClassNode> {
     public @NotNull ClassNode transform(ClassNode cn, ITransformerVotingContext context) {
         LOGGER.info("Starting patch operation for {}.", cn);
         boolean isRecord = cn.recordComponents != null && !cn.recordComponents.isEmpty();
-        boolean isMain = cn.nestHostClass.equals("null");
+        boolean isMain = cn.nestHostClass == null;
         writeRef(cn.name, targets.toFile());
         if (isMain) {
             // outputs the main classes
@@ -58,16 +58,21 @@ public class FallenTransformer implements ITransformer<ClassNode> {
                         // list here when we debug
                         if (insn.getOpcode() == Opcodes.INVOKESPECIAL) {
                             AbstractInsnNode insnWalker = insn;
-                            while (counter < filedNumber) {
+                            while (counter <= filedNumber) {
                                 insnWalker = insnWalker.getNext();
+                                if (counter == filedNumber) {
+                                    if (insnWalker.getOpcode() != Opcodes.RETURN) {
+                                        counter ++;
+                                        break;
+                                    }
+                                    break;
+                                }
                                 if (insnWalker instanceof VarInsnNode && insnWalker.getNext() instanceof VarInsnNode) {
                                     insnWalker = insnWalker.getNext().getNext();
                                     if (insnWalker instanceof FieldInsnNode) {
                                         counter ++;
+                                        continue;
                                     } else break;
-                                } else break;
-                                if (insnWalker.getOpcode() == Opcodes.RETURN) {
-                                    break;
                                 }
                             }
                         }
