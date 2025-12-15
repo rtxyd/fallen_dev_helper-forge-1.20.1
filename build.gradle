@@ -85,6 +85,7 @@ minecraft {
         client {
             // Comma-separated list of namespaces to load gametests from. Empty = all namespaces.
             property 'forge.enabledGameTestNamespaces', mod_id
+            jvmArgs '-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:5005'
         }
 
         server {
@@ -300,6 +301,7 @@ tasks.named('processResources', ProcessResources).configure {
 tasks.register('jarDevLib', Jar) {
     from(zipTree(tasks.jar.outputs.files.singleFile))
     exclude 'META-INF/mods.toml'
+    exclude 'net/rtxyd/fallen_dev_helper/FallenDevHelper.class'
     archiveClassifier.set('dev_lib')
 }
 
@@ -317,7 +319,7 @@ tasks.named('jar', Jar).configure {
         ])
     }
 
-    exclude 'META-INF/mods.toml'
+    exclude 'net/rtxyd/fallen_dev_helper/FallenDevHelper.class'
 
     // This is the preferred method to reobfuscate your jar file
     finalizedBy 'reobfJar', 'jarDevLib'

@@ -1,10 +1,9 @@
-package net.rtxyd.fallen_dev_helper.service;
+package net.rtxyd.fallen_lib.service;
 
 import cpw.mods.modlauncher.api.ITransformer;
 import cpw.mods.modlauncher.api.ITransformerVotingContext;
 import cpw.mods.modlauncher.api.TransformerVoteResult;
 
-import net.rtxyd.fallen_dev_helper.FallenTransformerService;
 import org.jetbrains.annotations.NotNull;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
@@ -16,7 +15,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
-import static net.rtxyd.fallen_dev_helper.FallenTransformerService.LOGGER;
+import static net.rtxyd.fallen_lib.service.FallenTransformerService.LOGGER;
 
 public class FallenTransformer implements ITransformer<ClassNode> {
 
@@ -178,7 +177,7 @@ public class FallenTransformer implements ITransformer<ClassNode> {
                                             Opcodes.INVOKESTATIC,
                                             "net/kayn/fallen_gems_affixes/augment/GemBonusModifier",
                                             "modifyI",
-                                            "(I)",
+                                            "(I)I",
                                             false
                                     ));
                                     break;
@@ -188,7 +187,7 @@ public class FallenTransformer implements ITransformer<ClassNode> {
                                             Opcodes.INVOKESTATIC,
                                             "net/kayn/fallen_gems_affixes/augment/GemBonusModifier",
                                             "modifyF",
-                                            "(F)",
+                                            "(F)F",
                                             false
                                     ));
                                     break;
@@ -198,7 +197,7 @@ public class FallenTransformer implements ITransformer<ClassNode> {
                                             Opcodes.INVOKESTATIC,
                                             "net/kayn/fallen_gems_affixes/augment/GemBonusModifier",
                                             "modifyD",
-                                            "(D)",
+                                            "(D)D",
                                             false
                                     ));
                                     break;
@@ -208,7 +207,7 @@ public class FallenTransformer implements ITransformer<ClassNode> {
                                             Opcodes.INVOKESTATIC,
                                             "net/kayn/fallen_gems_affixes/augment/GemBonusModifier",
                                             "modifyJ",
-                                            "(J)",
+                                            "(J)J",
                                             false
                                     ));
                                     break;
@@ -220,7 +219,7 @@ public class FallenTransformer implements ITransformer<ClassNode> {
                                             Opcodes.INVOKESTATIC,
                                             "net/kayn/fallen_gems_affixes/augment/GemBonusModifier",
                                             "modifyB",
-                                            "(B)",
+                                            "(B)B",
                                             false
                                     ));
                                     break;
@@ -230,7 +229,7 @@ public class FallenTransformer implements ITransformer<ClassNode> {
                                             Opcodes.INVOKESTATIC,
                                             "net/kayn/fallen_gems_affixes/augment/GemBonusModifier",
                                             "modifyS",
-                                            "(S)",
+                                            "(S)S",
                                             false
                                     ));
                                     break;

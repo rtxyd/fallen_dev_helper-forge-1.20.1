@@ -1,13 +1,11 @@
-package net.rtxyd.fallen_dev_helper;
+package net.rtxyd.fallen_lib.service;
 
 import cpw.mods.modlauncher.api.IEnvironment;
 import cpw.mods.modlauncher.api.ITransformationService;
 import cpw.mods.modlauncher.api.ITransformer;
-import net.rtxyd.fallen_dev_helper.service.FallenTransformer;
 import org.jetbrains.annotations.NotNull;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.tree.ClassNode;
-import org.objectweb.asm.tree.InnerClassNode;
 import org.slf4j.Logger;
 
 import java.io.File;
