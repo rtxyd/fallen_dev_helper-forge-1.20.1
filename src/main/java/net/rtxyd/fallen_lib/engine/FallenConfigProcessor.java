@@ -29,16 +29,10 @@ class FallenConfigProcessor implements ResourceProcessor {
             if (!cfg.versionCheck()) {
                 ResourceScanEngine.LOGGER.warn("Version mismatches: {}", r.path());
                 return;
+            } else if (!cfg.isRequired()) {
+                return;
             }
             ctx.internalConfigContainers.put(cfg, r.container());
-//            List<FallenPatchEntry> entries = new PatchEntryHelper().buildPatchEntries(cfg, r, ctx);
-//            if (entries.isEmpty()) {
-//                ResourceScanEngine.LOGGER.warn("Empty entries: {}", r.path());
-//                return;
-//            }
-//            for (FallenPatchEntry entry : entries) {
-//                ctx.internalPatchEntries.add(entry);
-//            }
         } catch (Exception e) {
             ResourceScanEngine.LOGGER.error("Failed reading fallen config: {}", r.path());
         }

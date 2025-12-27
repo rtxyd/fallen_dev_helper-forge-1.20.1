@@ -68,7 +68,7 @@ public final class FallenPatchEntry {
             return instance;
         } catch (Throwable t) {
             disabled = true;
-            FallenTransformerService.LOGGER.error("Failed to load fallen patch: {} : {}", className, t);
+            FallenBootstrap.LOGGER.error("Failed to load fallen patch: {} : {}", className, t);
             return null;
         }
     }
@@ -90,7 +90,7 @@ public final class FallenPatchEntry {
             return instance;
         } catch (Throwable t) {
             disabled = true;
-            FallenTransformerService.LOGGER.error("Failed to load transformer {}", className, t);
+            FallenBootstrap.LOGGER.error("Failed to load transformer {}", className, t);
             return null;
         }
     }

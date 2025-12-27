@@ -7,15 +7,13 @@ import net.rtxyd.fallen_lib.api.IFallenPatch;
 import net.rtxyd.fallen_lib.type.service.IFallenPatchContext;
 import net.rtxyd.fallen_lib.type.service.IFallenPatchCtorContext;
 import org.jetbrains.annotations.NotNull;
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.tree.ClassNode;
 
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-class FallenDelegatingTransformer implements ITransformer<ClassNode> {
+public final class FallenDelegatingTransformer implements ITransformer<ClassNode> {
     private final FallenPatchRegistry registry;
     private final IFallenPatchCtorContext ctorContext;
     private final IFallenPatchContext patchContext;
@@ -40,11 +38,11 @@ class FallenDelegatingTransformer implements ITransformer<ClassNode> {
             if (t == null) continue;
             // must make sure there is a fallback if transformer failed.
             // but we can't actually restrain its behavior, this is a safeguard.
-            ClassNode fallback = cloneClassNode(cn);
+            ClassNode fallback = Util.cloneClassNode(cn);
             try {
                 t.apply(cn, patchContext);
             } catch (Throwable ex) {
-                FallenTransformerService.LOGGER.error("Transformer {} failed on {}",
+                FallenBootstrap.LOGGER.error("Transformer {} failed on {}",
                         e.getClassName(), cn.name, ex);
                 e.disable();
                 cn = fallback;
@@ -61,16 +59,5 @@ class FallenDelegatingTransformer implements ITransformer<ClassNode> {
     @Override
     public @NotNull Set<Target> targets() {
         return registry.targets().stream().map(Target::targetClass).collect(Collectors.toSet());
-    }
-
-    public static ClassNode cloneClassNode(ClassNode original) {
-        ClassWriter cw = new ClassWriter(0);
-        original.accept(cw);
-        byte[] bytes = cw.toByteArray();
-
-        ClassReader cr = new ClassReader(bytes);
-        ClassNode copy = new ClassNode();
-        cr.accept(copy, 0);
-        return copy;
     }
 }

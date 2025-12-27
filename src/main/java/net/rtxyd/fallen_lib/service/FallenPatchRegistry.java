@@ -1,17 +1,16 @@
 package net.rtxyd.fallen_lib.service;
 
-import net.rtxyd.fallen_lib.type.service.IFallenPatchRegistry;
+import net.rtxyd.fallen_lib.type.service.IFallenRegistry;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class FallenPatchRegistry implements IFallenPatchRegistry<FallenPatchEntry> {
+public class FallenPatchRegistry implements IFallenRegistry<FallenPatchEntry> {
     private final Map<String, List<FallenPatchEntry>> targetEntries = new ConcurrentHashMap<>();
     private final Map<String, List<FallenPatchEntry>> cache = new ConcurrentHashMap<>();
     Map<String, byte[]> classBytes = new ConcurrentHashMap<>();
     private Set<String> targets;
 
-    @Override
     public List<FallenPatchEntry> match(String className) {
         return cache.computeIfAbsent(className, this::computeMatch);
     }

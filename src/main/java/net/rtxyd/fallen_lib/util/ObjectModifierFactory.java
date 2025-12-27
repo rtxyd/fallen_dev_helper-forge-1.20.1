@@ -187,8 +187,8 @@ public class ObjectModifierFactory {
         Class<?> c = clazz;
         while (c != null && c != Object.class) {
             Field[] declared = c.getDeclaredFields();
-            boolean shouldAdd = true;
             for (Field field : declared) {
+                boolean shouldAdd = true;
                 String name = field.getName();
                 for (String filter : fieldNameFilter) {
                     if (name.contains(filter)) {

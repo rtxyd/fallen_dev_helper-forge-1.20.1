@@ -11,8 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-// package-private helper class
-class InitializeHelper {
+public class InitializeHelper {
 
     private final IEnvironment environment;
     private final ResourceScanEngine engine;
@@ -22,7 +21,7 @@ class InitializeHelper {
     private Path gamePath;
     private File modsDir;
 
-    InitializeHelper(IEnvironment environment) {
+    public InitializeHelper(IEnvironment environment) {
         this.environment = environment;
         this.engine = new ResourceScanEngine();
 
@@ -60,7 +59,7 @@ class InitializeHelper {
                     scanners.add(new JarScanner(jar));
                 }
             } else {
-                FallenTransformerService.LOGGER.error("Mods directory is invalid: {}", modsDir.getAbsolutePath());
+                FallenBootstrap.LOGGER.error("Mods directory is invalid: {}", modsDir.getAbsolutePath());
             }
         }
 
@@ -74,15 +73,15 @@ class InitializeHelper {
     }
 
     void scanResources() throws IOException {
-        FallenTransformerService.LOGGER.info("Prepare to scan resources.");
+        FallenBootstrap.LOGGER.info("Prepare to scan resources.");
         ctx = engine.scan(scanners, true);
-        FallenTransformerService.LOGGER.info("End scanning.");
+        FallenBootstrap.LOGGER.info("End scanning.");
     }
 
     void registerPatches(FallenPatchRegistry registry) {
-        FallenTransformerService.LOGGER.info("Prepare to sort fallen patches.");
+        FallenBootstrap.LOGGER.info("Prepare to sort fallen patches.");
         List<FallenPatchEntry> entries = new ArrayList<>();
-        FallenTransformerService.LOGGER.info("Sorted {} patch entries.", entries.size());
+        FallenBootstrap.LOGGER.info("Sorted {} patch entries.", entries.size());
 
         ClassIndex index = ctx.classIndex;
         Set<String> allClasses = index.getAllClasses();
@@ -98,7 +97,7 @@ class InitializeHelper {
             }
         }
 
-        FallenTransformerService.LOGGER.info("End registering fallen patch entries.");
+        FallenBootstrap.LOGGER.info("End registering fallen patch entries.");
     }
 
     ScanContext getScanContext() {

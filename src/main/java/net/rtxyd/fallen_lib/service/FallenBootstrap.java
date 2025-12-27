@@ -4,7 +4,6 @@ import cpw.mods.modlauncher.api.IEnvironment;
 import cpw.mods.modlauncher.api.ITransformationService;
 import cpw.mods.modlauncher.api.ITransformer;
 import net.rtxyd.fallen_lib.type.service.IFallenPatchCtorContext;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,10 +11,10 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
-public class FallenTransformerService implements ITransformationService {
+public final class FallenBootstrap implements ITransformationService {
     boolean initialized;
     private final FallenPatchRegistry registry = new FallenPatchRegistry();
-    protected static final Logger LOGGER = LoggerFactory.getLogger("fallen");
+    static final Logger LOGGER = LoggerFactory.getLogger("fallen");
     @Override
     public String name() {
         return "fallen";
@@ -46,7 +45,7 @@ public class FallenTransformerService implements ITransformationService {
     }
 
     @Override
-    public @NotNull List<ITransformer> transformers() {
+    public List<ITransformer> transformers() {
         LOGGER.info("Creating delegating transformer.");
         return List.of(new FallenDelegatingTransformer(registry, new IFallenPatchCtorContext() {}));
     }

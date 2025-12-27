@@ -42,7 +42,7 @@ class PatchEntryHelper {
                 JarEntry jarEntry = jarFile.getJarEntry(zn);
                 return jarFile.getInputStream(jarEntry);
             } catch (IOException e) {
-                FallenTransformerService.LOGGER.error("Failed parsing jarFile {}: {}", jar.getName(), e.getMessage());
+                FallenBootstrap.LOGGER.error("Failed parsing jarFile {}: {}", jar.getName(), e.getMessage());
                 throw new RuntimeException(e);
             }
         });
@@ -71,11 +71,11 @@ class PatchEntryHelper {
                     counter += 1;
                 }
             } catch (IOException e) {
-                FallenTransformerService.LOGGER.error("Failed parsing fallen patch class {} : {}", zn, e.getMessage());
+                FallenBootstrap.LOGGER.error("Failed parsing fallen patch class {} : {}", zn, e.getMessage());
             }
         }
         if (counter == 0) {
-            FallenTransformerService.LOGGER.warn("Empty entries: package: {}, class: {}", cfg.getPackage(), zn);
+            FallenBootstrap.LOGGER.warn("Empty entries: package: {}, class: {}", cfg.getPackage(), zn);
         }
     }
 
