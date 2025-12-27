@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.jar.JarEntry;
@@ -30,9 +31,9 @@ class PatchEntryHelper {
             buildInner(outEntries, outRestoredBytes, cfg, cont, (f, zn) -> {
                 InputStream is = getClass().getClassLoader().getResourceAsStream(zn);
                 if (is == null) {
-                    is = ClassLoader.getSystemClassLoader().getResourceAsStream(zn);
+                    return Optional.ofNullable(ClassLoader.getSystemClassLoader().getResourceAsStream(zn));
                 }
-                return is;
+                return Optional.of(is);
             });
             return;
         }
@@ -40,20 +41,21 @@ class PatchEntryHelper {
         buildInner(outEntries, outRestoredBytes, cfg, cont, (jar, zn) -> {
             try (JarFile jarFile = new JarFile(jar)){
                 JarEntry jarEntry = jarFile.getJarEntry(zn);
-                return jarFile.getInputStream(jarEntry);
+                return Optional.ofNullable(jarFile.getInputStream(jarEntry));
             } catch (IOException e) {
                 FallenBootstrap.LOGGER.error("Failed parsing jarFile {}: {}", jar.getName(), e.getMessage());
-                throw new RuntimeException(e);
+                return Optional.empty();
             }
         });
     }
 
-    private void buildInner(List<FallenPatchEntry> entries, Map<String, byte[]> restoredBytes, FallenConfig cfg, File cont, BiFunction<File, String, InputStream> isFunction) {
+    private void buildInner(List<FallenPatchEntry> entries, Map<String, byte[]> restoredBytes, FallenConfig cfg, File cont, BiFunction<File, String, Optional<InputStream>> isFunction) {
         int counter = 0;
         String zn = "";
         for (String className : cfg.buildClassNames()) {
             zn = className.replace(".", "/") + ".class";
-            try (InputStream is = isFunction.apply(cont, zn)) {
+            String finalZn = zn;
+            try (InputStream is = isFunction.apply(cont, zn).orElseThrow(() -> new IOException("Resource not found: " + finalZn))) {
                 byte[] inputBytes = is.readAllBytes();
                 ClassNode cn = new ClassNode();
                 new ClassReader(inputBytes).accept(cn, ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
