@@ -2,6 +2,8 @@
 
 ## 1.1
 ---
+### 1.1.2
+- Fixed a null point exception when resource is not found.
 ### 1.1.1
 - Added debug infos in patch processing procedure.
 - Changed `copyOf()` to unmodifiable version.
