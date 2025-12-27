@@ -51,6 +51,10 @@ class PatchSecurityHelperV2 implements IPatchSecurityHelper {
             return true;
         }
 
+        if (owner.equals("java/lang/ClassLoader")) {
+            return true;
+        }
+
         if (owner.startsWith("net/minecraft/")
                 || owner.startsWith("net/minecraftforge/")) {
             return true;
