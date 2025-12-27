@@ -82,6 +82,7 @@ class PatchEntryHelper {
 //    @SuppressWarnings("unchecked")
     public FallenPatchEntry parseAndBuild(String path, AnnotationData data) {
         Integer pr = (Integer) data.get("priority");
+        String className = path.replace("/", ".").replaceAll("\\.class$", "");
         if (pr == null) {
             pr = 1000;
         }
@@ -90,19 +91,33 @@ class PatchEntryHelper {
         if (tarData == null) {
             targets = new FallenPatchEntry.Targets();
         } else {
+            targets = new FallenPatchEntry.Targets();
             List<String> exact = tarData.getWithDefaut("exact", List.of());
             List<String> subclass = tarData.getWithDefaut("subclass", List.of());
-            targets = new FallenPatchEntry.Targets().from(exact, subclass);
+            if (containsForbidden(exact) || containsForbidden(subclass)) {
+                FallenBootstrap.LOGGER.warn("Warning: {} targets mc or forge class, it is not supported for now.", className);
+            } else {
+                targets = new FallenPatchEntry.Targets().from(exact, subclass);
+            }
         }
-        return buildEntry(path, pr, targets);
+        return buildEntry(className, pr, targets);
     }
 
-    private FallenPatchEntry buildEntry(String path, int priority, FallenPatchEntry.Targets targets) {
+    private FallenPatchEntry buildEntry(String className, int priority, FallenPatchEntry.Targets targets) {
         return new FallenPatchEntry(
-                path.replace("/", ".")
-                        .replaceAll("\\.class$", ""),
+                className,
                 targets.computeTargeter(),
                 priority,
                 targets);
+    }
+
+    public boolean containsForbidden(List<String> targets) {
+        for (String s : targets) {
+            if (s.startsWith("net.minecraft.")
+                    || s.startsWith("net.minecraftforge.")) {
+                return true;
+            }
+        }
+        return false;
     }
 }

@@ -112,22 +112,9 @@ public final class FallenPatchEntry {
         Set<String> subclass = Set.of();
 
         public Targets from(List<String> exact, List<String> subclass) {
-            if (containsForbidden(exact) && containsForbidden(subclass)) {
-                return this;
-            }
             this.exact = exact.stream().map(s->s.replace(".", "/")).collect(Collectors.toUnmodifiableSet());
             this.subclass = subclass.stream().map(s->s.replace(".", "/")).collect(Collectors.toUnmodifiableSet());
             return this;
-        }
-
-        public static boolean containsForbidden(List<String> targets) {
-            for (String s : targets) {
-                if (s.startsWith("net.minecraft.")
-                        || s.startsWith("net.minecraftforge.")) {
-                    return true;
-                }
-            }
-            return false;
         }
 
         public int computeTargeter() {

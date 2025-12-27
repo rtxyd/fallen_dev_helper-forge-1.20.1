@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
@@ -79,18 +80,21 @@ public class InitializeHelper {
     }
 
     void registerPatches(FallenPatchRegistry registry) {
-        FallenBootstrap.LOGGER.info("Prepare to sort fallen patches.");
         List<FallenPatchEntry> entries = new ArrayList<>();
-        FallenBootstrap.LOGGER.info("Sorted {} patch entries.", entries.size());
 
         ClassIndex index = ctx.classIndex;
         Set<String> allClasses = index.getAllClasses();
         ctx.configContainers().forEach(((config, container) -> {
             new PatchEntryHelper().buildPatchEntries(config, container, entries, registry.classBytes);
         }));
-
+        FallenBootstrap.LOGGER.info("Prepare to sort fallen patches.");
+        entries.sort(Comparator.comparingInt(FallenPatchEntry::getPriority));
+        FallenBootstrap.LOGGER.info("Sorted {} patch entries.", entries.size());
         for (FallenPatchEntry e : entries) {
-            if (e.isEmpty()) continue;
+            if (e.isEmpty()) {
+                FallenBootstrap.LOGGER.warn("Warning: patch {} has empty targets", e.getClassName());
+                continue;
+            }
             for (String className : allClasses) {
                 if (e.matches(className, index)) {
                     registry.register(className, e);
