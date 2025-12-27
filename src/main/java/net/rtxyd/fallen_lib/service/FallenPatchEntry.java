@@ -112,7 +112,7 @@ public final class FallenPatchEntry {
         Set<String> subclass = Set.of();
 
         public Targets from(List<String> exact, List<String> subclass) {
-            if (checkTargets(exact) && checkTargets(subclass)) {
+            if (containsForbidden(exact) && containsForbidden(subclass)) {
                 return this;
             }
             this.exact = exact.stream().map(s->s.replace(".", "/")).collect(Collectors.toUnmodifiableSet());
@@ -120,14 +120,14 @@ public final class FallenPatchEntry {
             return this;
         }
 
-        public static boolean checkTargets(List<String> targets) {
+        public static boolean containsForbidden(List<String> targets) {
             for (String s : targets) {
                 if (s.startsWith("net.minecraft.")
                         || s.startsWith("net.minecraftforge.")) {
-                    return false;
+                    return true;
                 }
             }
-            return true;
+            return false;
         }
 
         public int computeTargeter() {
