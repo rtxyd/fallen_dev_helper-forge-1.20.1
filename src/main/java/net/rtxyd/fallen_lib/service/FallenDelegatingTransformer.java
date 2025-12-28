@@ -42,7 +42,11 @@ public final class FallenDelegatingTransformer implements ITransformer<ClassNode
             // but we can't actually restrain its behavior, this is a safeguard.
             ClassNode fallback = Util.cloneClassNode(cn);
             try {
-                t.apply(cn, patchContext);
+                boolean success = t.apply(cn, patchContext);
+                if (!success) {
+                    FallenBootstrap.LOGGER.debug("Fallen patch [{}] returns false when applied on [{}]", e.getClassName(), cn.name);
+                    cn = fallback;
+                }
                 patchContext.recordPatchEffect(e.getClassName());
                 FallenBootstrap.LOGGER.info("Fallen patch [{}] successfully applied on [{}]", e.getClassName(), cn.name);
             } catch (Throwable ex) {
