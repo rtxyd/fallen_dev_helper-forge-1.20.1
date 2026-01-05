@@ -199,7 +199,7 @@ tasks.register('jarDevLib', Jar) {
     from(zipTree(tasks.jar.outputs.files.singleFile))
     exclude 'META-INF/mods.toml'
     exclude 'net/rtxyd/fallen_dev_helper/FallenLib.class'
-    archiveClassifier.set('dev_lib')
+    archiveClassifier.set('dev')
 }
 
 // Example for how to get properties into the manifest for reading at runtime.
@@ -232,6 +232,10 @@ publishing {
     publications {
         register('mavenJava', MavenPublication) {
             artifact jar
+            artifact jarDevLib
+            groupId = 'io.github.rtxyd'
+            artifactId = 'fallen-lib'
+            version = project.version
         }
     }
     repositories {

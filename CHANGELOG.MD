@@ -3,6 +3,7 @@
 ## 1.2
 ---
 ### 1.2.0
+- Hotfix, fix buildInfo with wrong version.
 - Introduce an each-class cache to cache the `MethodInsnNode` state, avoiding recalculation of local variables.
 - Update `ObjectModifierFactory`, make the ignored field filter a `Predicate<String>` to support more flexible control.
 - Add `inserter` field to `@FallenPatch` define the class contains methods with `@FallenInserter`
