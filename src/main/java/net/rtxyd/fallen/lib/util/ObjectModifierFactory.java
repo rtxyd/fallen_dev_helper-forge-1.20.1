@@ -5,6 +5,7 @@ import sun.reflect.ReflectionFactory;
 import java.lang.reflect.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Predicate;
 
 /**
  * This class must be thread-safe.
@@ -12,19 +13,19 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ObjectModifierFactory {
 
     // cache instantiators
-    private final Map<Class<?>, Constructor<?>> instantiatorCache = new ConcurrentHashMap<>();
+    private static final Map<Class<?>, Constructor<?>> instantiatorCache = new ConcurrentHashMap<>();
     // cache fields (including superclasses fields) for non-record class
-    private final Map<Class<?>, Field[]> fieldsCache = new ConcurrentHashMap<>();
+    private static final Map<Class<?>, Field[]> fieldsCache = new ConcurrentHashMap<>();
     // cache record components for construct a new instance with canonical constructor.
-    private final Map<Class<?>, RecordComponent[]> recordComponentsCache = new ConcurrentHashMap<>();
+    private static final Map<Class<?>, RecordComponent[]> recordComponentsCache = new ConcurrentHashMap<>();
     // cache accessors
-    private final Map<Class<?>, Method[]> recordAccessorCache = new ConcurrentHashMap<>();
-    // cache accessors
-    private final Map<Class<?>, boolean[]> fieldFilterCache = new ConcurrentHashMap<>();
+    private static final Map<Class<?>, Method[]> recordAccessorCache = new ConcurrentHashMap<>();
+    // cache filtered field
+    private final Map<Class<?>, boolean[]> fieldFilterCache;
     // add to blackList if you can't modify
     private final Set<Class<?>> blackList = ConcurrentHashMap.newKeySet();
     // filter field name
-    private final Set<String> fieldNameFilter = ConcurrentHashMap.newKeySet();
+    private final Predicate<String> ignoredFieldName;
 
     public RecordComponent[] collectRecordComponents(Class<?> clazz) {
         return clazz.getRecordComponents();
@@ -38,8 +39,37 @@ public class ObjectModifierFactory {
         return blackList.contains(clazz);
     }
 
-    public void addFiledNameFilter(String name) {
-        fieldNameFilter.add(name);
+    public ObjectModifierFactory(Predicate<String> ignoredFieldName) {
+        this.fieldFilterCache = new ConcurrentHashMap<>();
+        this.ignoredFieldName = ignoredFieldName;
+    }
+
+    public ObjectModifierFactory copy(Predicate<String> newIgnore, EnumSet<CopyFlag> flags) {
+        final boolean reuseFilter = newIgnore == null && flags.contains(CopyFlag.COPY_FIELD_FILTER);
+
+        if (flags.contains(CopyFlag.COPY_FILTER_CACHE) && !reuseFilter) {
+            throw new IllegalArgumentException("COPY_FILTER_CACHE requires reusing the same filter");
+        }
+
+        ObjectModifierFactory copy = reuseFilter
+                ? new ObjectModifierFactory(this.ignoredFieldName)
+                : new ObjectModifierFactory(Objects.requireNonNull(newIgnore));
+
+        if (flags.contains(CopyFlag.COPY_FILTER_CACHE)) {
+            copy.fieldFilterCache.putAll(this.fieldFilterCache);
+        }
+
+        if (flags.contains(CopyFlag.COPY_BLACK_LIST)) {
+            copy.blackList.addAll(this.blackList);
+        }
+
+        return copy;
+    }
+
+    public enum CopyFlag {
+        COPY_FILTER_CACHE,
+        COPY_BLACK_LIST,
+        COPY_FIELD_FILTER
     }
 
     /**
@@ -96,12 +126,9 @@ public class ObjectModifierFactory {
             boolean[] isOK = new boolean[components.length];
             Arrays.fill(isOK, true);
             for (int i = 0; i < components.length; i++) {
-                for (String filter : fieldNameFilter) {
-                    String compName = components[i].getName().toLowerCase();
-                    if (compName.startsWith(filter) || compName.endsWith(filter)) {
-                        isOK[i] = false;
-                        break;
-                    }
+                if (ignoredFieldName.test(components[i].getName())) {
+                    isOK[i] = false;
+                    break;
                 }
             }
             return isOK;
@@ -189,13 +216,10 @@ public class ObjectModifierFactory {
             Field[] declared = c.getDeclaredFields();
             for (Field field : declared) {
                 boolean shouldAdd = true;
-                String name = field.getName();
-                for (String filter : fieldNameFilter) {
-                    if (name.contains(filter)) {
-                        Class<?> type = field.getType();
-                        if (type.isPrimitive() && type != char.class && type != boolean.class || Number.class.isAssignableFrom(type)) {
-                            shouldAdd = false;
-                        }
+                if (ignoredFieldName.test(field.getName())) {
+                    Class<?> type = field.getType();
+                    if (type.isPrimitive() && type != char.class && type != boolean.class || Number.class.isAssignableFrom(type)) {
+                        shouldAdd = false;
                     }
                 }
                 if (shouldAdd) {

@@ -1,8 +1,6 @@
 package net.rtxyd.fallen.lib.util;
 
-import net.rtxyd.fallen.lib.service.FallenBootstrap;
-import net.rtxyd.fallen.lib.util.patch.InserterType;
-import net.rtxyd.fallen.lib.util.patch.StablePatchUtilV2;
+import net.rtxyd.fallen.lib.util.patch.*;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
@@ -24,8 +22,6 @@ public class PatchUtil {
                     return ctx.ret();
                 }
             """;
-
-    public static void bootstrap() {}
 
     public static ClassNode cloneClassNode(ClassNode original) {
         ClassWriter cw = new ClassWriter(0);

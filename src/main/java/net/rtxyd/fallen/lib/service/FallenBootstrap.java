@@ -3,7 +3,6 @@ package net.rtxyd.fallen.lib.service;
 import cpw.mods.modlauncher.api.IEnvironment;
 import cpw.mods.modlauncher.api.ITransformationService;
 import cpw.mods.modlauncher.api.ITransformer;
-import net.rtxyd.fallen.lib.util.PatchUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,7 +37,6 @@ public final class FallenBootstrap implements ITransformationService {
         }
 
         helper.registerPatches(registry);
-        PatchUtil.bootstrap();
     }
 
     @Override
